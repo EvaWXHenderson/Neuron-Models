@@ -16,7 +16,7 @@ I_t_max = 1.63 #magnitude of injected current max (nA)
 I_int = 0.04 #magnitude of intervals of ijected current increase (nA)
 
 V_r = -70 #resting membrane potential (mV)
-V_th = -55 #activation potential (mV)
+V_th = -55 #activation potential (mV) - V and R_m defined later
 V_hyp = -75 #hyperpolarisation (reset) potential (mV)
 V_dep = 30 #maximal depolarisation potential (mV)
 
@@ -27,16 +27,18 @@ tau = 10 #membrane time constant (ms)
    - regular neurons = 20.2 +/- 14.6 ms)"""
 
 
-
 """counters: """
 current_time = 0 #(counter)
 V_i_values = [V_r]
+V_last = V_r
 time = [0]
 spikes = 0
 spiked_V = []
 spiked_t = []
 I_t_values = [1.43]
 
+currents_above_V_th = []
+r_isi_values = []
 
 """model: """
 while I_t <= I_t_max:
@@ -44,6 +46,7 @@ while I_t <= I_t_max:
     I_t_values.append(I_t)
 
 for I_t_i in range(len(I_t_values)):
+    
     while current_time <= t_end:
         current_time = current_time + dt
         time.append(current_time)
@@ -53,18 +56,25 @@ for I_t_i in range(len(I_t_values)):
             I = I_t_values[I_t_i]
         
         V = V_r + (I*R_m)
-        V_i = V + (V_i_values[-1] - V)*math.exp(-dt/tau) #[-1] = previous item in list
+        V_i = V + (V_last - V)*math.exp(-dt/tau) #[-1] = previous item in list
+
+        V_i_values.append(V_i)
         
         if V_i > V_th:
             V_i =  V_hyp #implies spike occurance, allows for counting of spikes occured
+            #causes issues - resetting at this point means value can no longer be used
             spikes = spikes + 1
-            spiked_index = len(V_i_values)
+            spiked_index = len(V_i_values) - 1  
             spiked_V.append(V_dep)
             spiked_t.append(time[spiked_index])
         
-        V_i_values.append(V_i)
-    
+        V_last = V_i
+
     AveRate = 1000*spikes/(t_input_end - t_input_start) 
+
+    for value in range(len(V_i_values)):
+        if V_i_values[value] >= V_th:
+            currents_above_V_th.append(V_i_values[value])
 
     plt.subplot(1, 6, I_t_i+1)
     plt.plot(time, V_i_values)
@@ -78,6 +88,7 @@ for I_t_i in range(len(I_t_values)):
 
     print("Number of action potentials reached occured: " + str(spikes))
     print("Average rate of action potential generation: " + str(AveRate) + " (Hz)")
+    print(len(currents_above_V_th))
 
     current_time = 0
     V_i_values = [V_r]
@@ -85,5 +96,13 @@ for I_t_i in range(len(I_t_values)):
     spikes = 0
     spiked_V = []
     spiked_t = []
+    current_time = 0
+
 
 plt.show()
+
+"""currents_above_V_th.append(I_t_values[I_t_i])
+print(currents_above_V_th)
+for current in range(len(currents_above_V_th)):
+    r_isi = (1000/(tau*math.log(V_dep - currents_above_V_th[current] * R_m)))/(V_i - currents_above_V_th[current] * R_m)
+    r_isi_values.append(r_isi)"""
