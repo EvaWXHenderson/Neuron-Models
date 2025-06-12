@@ -37,6 +37,7 @@ spiked_V = []
 spiked_t = []
 I_t_values = [1.43]
 AveRate = 0
+AveRate_values = []
 
 currents_above_V_th = []
 r_isi_values = []
@@ -83,19 +84,33 @@ def average_spiking_calc():
     global AveRate, spikes, t_input_end, t_input_start
 
     AveRate = 1000*spikes/(t_input_end - t_input_start)
+    AveRate_values.append(AveRate)
+def theoretical_spiking_calc():
+    global I, I_t_values, I_th, r_isi, tau, V_hyp, V_r, R_m, V_th, r_isi_values
+    for I in range(len(I_t_values)):
+        if I_t_values[I] >= I_th:
+            r_isi = 1000/(tau*(math.log(((V_hyp - V_r - I_t_values[I]) * R_m)/(V_th - V_r - I_t_values[I] * R_m))))
+        else:
+            r_isi = 0
+        
+        r_isi_values.append(r_isi)
 def results_display_per_I():
     global spikes, AveRate
 
     print("Number of action potentials reached occured: " + str(spikes))
     print("Average rate of action potential generation: " + str(AveRate) + " (Hz)")
-def results_theoretical_spiking():
-    global I_t_values, r_isi_values
+def comparative_spiking():
+    global I_t_values, r_isi_values, AveRate_values
 
-    print("injected currents and associated theoretical average spiking rate:" + str(I_t_values), str(r_isi_values))
-"""model: """
+    for index in range(len(I_t_values)):
+        print("For: " + str(I_t_values[index]) + "\n" + 
+            "Theoretical spiking rate:" + str(r_isi_values[index]) + "\t Average spiking rate: " + str(AveRate_values[index]) + "\n")
+
+
+
 while I_t <= I_t_max:
     I_t = I_t + I_int #change so 0.04 is a mutable interval 
-    I_t_values.append(I_t)
+    I_t_values.append(round(I_t, 2))
 
 for I_t_i in range(len(I_t_values)):
     
@@ -108,6 +123,7 @@ for I_t_i in range(len(I_t_values)):
         voltage_calc()
 
     average_spiking_calc()
+
 
     plt.subplot(1, 6, I_t_i+1)
     plt.plot(time, V_i_values)
@@ -124,20 +140,16 @@ for I_t_i in range(len(I_t_values)):
 
     reset()
 
-"""finding theoretical spiking rate (r_isi)"""
-for I in range(len(I_t_values)):
-    if I_t_values[I] >= I_th:
-        r_isi = 1000/(tau*(math.log(((V_hyp - V_r - I_t_values[I]) * R_m)/(V_th - V_r - I_t_values[I] * R_m))))
-    else:
-        r_isi = 0
-    
-    r_isi_values.append(r_isi)
+theoretical_spiking_calc()
 
 plt.figure()
-plt.plot(I_t_values, r_isi_values)
 plt.xlabel("Theoretical firing rate")
 plt.ylabel("Injected Current (nA)")
+plt.scatter(I_t_values, r_isi_values, color = "red")
+plt.plot(I_t_values, r_isi_values, color = "black")
 
-results_theoretical_spiking()
+comparative_spiking()
+
+
 
 plt.show()
