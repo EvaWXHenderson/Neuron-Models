@@ -3,7 +3,7 @@
 ## Basic Fire and Integrate model
 In the case of external constant injection of current I, corresponding Voltage outcomes (including a calculation of theoretical and average spiking rates) are graphed.
 
-(Translation of a program in matlab to python)
+
 
 ### Sources:
 https://goldmanlab.faculty.ucdavis.edu/wp-content/uploads/sites/263/2016/07/IntegrateFire.pdf
@@ -15,7 +15,7 @@ The hodgkin-huxley neuron model models the voltage and time dependent conductanc
 
 In the case of external constant injection of current I, corresponding Hodgkin-Huckley variables are plotted against time.
 
-(Translation of a program in matlab to python)
+
 
 ### Sources:
 https://goldmanlab.faculty.ucdavis.edu/wp-content/uploads/sites/263/2016/07/HodgkinHuxley.pdf
