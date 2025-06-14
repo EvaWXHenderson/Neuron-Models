@@ -39,10 +39,9 @@ def variable_inf_calc(variable):
         return n_inf, tau_n 
     
     if variable == "V":
-        for index in range(len(m_values)):
-            V_inf = ((G_MAX_L*E_L) + (G_MAX_K*(n_values[index]**4)*E_K)+(G_MAX_NA*(m_values[index]**3)*h_values[index]*E_NA + I_t_values[-1]))/(G_MAX_L + (G_MAX_K*(n_values[index]**4)) + (G_MAX_NA*(m_values[index]**3)*h_values[index]))
-            tau_V = C/(G_MAX_L + (G_MAX_K*(n_values[index]**4)) + (G_MAX_NA*(m_values[index]**3)*h_values[index]))
-            return V_inf, tau_V
+        V_inf = ((G_MAX_L*E_L) + (G_MAX_K*(n_values[-1]**4)*E_K)+(G_MAX_NA*(m_values[-1]**3)*h_values[-1]*E_NA + I_t_values[-1]))/(G_MAX_L + (G_MAX_K*(n_values[-1]**4)) + (G_MAX_NA*(m_values[-1]**3)*h_values[-1]))
+        tau_V = C/(G_MAX_L + (G_MAX_K*(n_values[-1]**4)) + (G_MAX_NA*(m_values[-1]**3)*h_values[-1]))
+        return V_inf, tau_V
 
 def variable_calc(variable):
     global m_inf, m_values, tau_m, h_inf, h_values, tau_h, n_inf, n_values, tau_n, DT
@@ -117,33 +116,43 @@ while current_time <= T_END:
     if current_time >= T_STIM_START and current_time < T_STIM_END:
         I = I_0
         I_t_values.append(I)
-    
-    A_m, B_m = alpha_beta_assign("m")
-    A_h, B_h = alpha_beta_assign("h")
-    A_n, B_n = alpha_beta_assign("n")
 
-    m = variable_calc("m")
-    g_m_values.append(m*100)
-    m_values.append(m)
+    A_m = (0.1*(V_values[-1] + 40))/(1-math.exp(-0.1*(V_values[-1] + 40)))
+    B_m = 4*math.exp(-0.0556*(V_values[-1]+65))
 
-    h = variable_calc("h")
-    g_h_values.append(h*100)
-    h_values.append(h)
+    A_h = 0.07*math.exp(-0.05*(V_values[-1] + 65))
+    B_h = 1/(1+math.exp(-0.1*(V_values[-1] + 35)))
 
-    n = variable_calc("n")
-    g_n_values.append(n*100)
-    n_values.append(n)
+    A_n = (0.01*(V_values[-1] + 55))/(1-math.exp(-0.1*(V_values[-1] + 55)))
+    B_n = 0.125*math.exp(-0.0125*(V_values[-1]+65))
 
     V_inf, tau_V = variable_inf_calc("V")
     V = variable_calc("V")
     V_values.append(V)
 
-"""print(str(V_values) + "\n" + str(m_values[1:5]) + "\n" + str(n_values[1:5]) + "\n" + str(h_values[1:5]) + "\n" + str(time[1:5]))
-print(g_m_values)
-print(V_inf, tau_V)
-print(m_inf, tau_m)
-print(h_inf, tau_h)
-print(n_inf, tau_n)"""
+    #m = variable_calc("m")
+    m_inf = A_m/(A_m + B_m)
+    tau_m = 1/(A_m + B_m)
+    m = m_inf + (m_values[-1] - m_inf)*math.exp(-DT/tau_m)
+    g_m_values.append(m*100)
+    m_values.append(m)
+
+    #h = variable_calc("h")
+    h_inf = A_h/(A_h + B_h)
+    tau_h = 1/(A_h + B_h)
+    h = h_inf + (h_values[-1] - h_inf)*math.exp(-DT/tau_h)
+    g_h_values.append(h*100)
+    h_values.append(h)
+
+    #n = variable_calc("n")
+    n_inf = A_n/(A_n + B_n)
+    tau_n = 1/(A_n + B_n)
+    n = n_inf + (n_values[-1] - n_inf)*math.exp(-DT/tau_n)
+    g_n_values.append(n*100)
+    n_values.append(n)
+
+
+
 
 plt.plot(time, V_values, color = "blue")
 plt.plot(time, g_m_values, color = "black")
