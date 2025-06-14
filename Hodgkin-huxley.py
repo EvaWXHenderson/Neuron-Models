@@ -117,37 +117,31 @@ while current_time <= T_END:
         I = I_0
         I_t_values.append(I)
 
-    A_m = (0.1*(V_values[-1] + 40))/(1-math.exp(-0.1*(V_values[-1] + 40)))
-    B_m = 4*math.exp(-0.0556*(V_values[-1]+65))
 
-    A_h = 0.07*math.exp(-0.05*(V_values[-1] + 65))
-    B_h = 1/(1+math.exp(-0.1*(V_values[-1] + 35)))
-
-    A_n = (0.01*(V_values[-1] + 55))/(1-math.exp(-0.1*(V_values[-1] + 55)))
-    B_n = 0.125*math.exp(-0.0125*(V_values[-1]+65))
+    A_m, B_m = alpha_beta_assign("m")
+    A_h, B_h = alpha_beta_assign("h")
+    A_n, B_n = alpha_beta_assign("n")
+    
 
     V_inf, tau_V = variable_inf_calc("V")
     V = variable_calc("V")
     V_values.append(V)
 
     #m = variable_calc("m")
-    m_inf = A_m/(A_m + B_m)
-    tau_m = 1/(A_m + B_m)
-    m = m_inf + (m_values[-1] - m_inf)*math.exp(-DT/tau_m)
+    m_inf, tau_m = variable_inf_calc("m")
+    m = variable_calc("m")
     g_m_values.append(m*100)
     m_values.append(m)
 
     #h = variable_calc("h")
-    h_inf = A_h/(A_h + B_h)
-    tau_h = 1/(A_h + B_h)
-    h = h_inf + (h_values[-1] - h_inf)*math.exp(-DT/tau_h)
+    h_inf, tau_h = variable_inf_calc("h")
+    h = variable_calc("h")
     g_h_values.append(h*100)
     h_values.append(h)
 
     #n = variable_calc("n")
-    n_inf = A_n/(A_n + B_n)
-    tau_n = 1/(A_n + B_n)
-    n = n_inf + (n_values[-1] - n_inf)*math.exp(-DT/tau_n)
+    n_inf, tau_n = variable_inf_calc("n")
+    n = variable_calc("n")
     g_n_values.append(n*100)
     n_values.append(n)
 
@@ -160,8 +154,8 @@ plt.plot(time, g_h_values, color = "red")
 plt.plot(time, g_n_values, color = "green")
 plt.xlabel("Voltage (nA)")
 plt.ylabel("Time (ms)")
-#plt.legend(["Voltage", "m*100" , "h*100", "n*100"], loc = "lower right")
-#plt.xlim(0, T_END)
-#plt.ylim(V_values[0] - 15, 100)
+plt.legend(["Voltage", "m*100" , "h*100", "n*100"], loc = "lower right")
+plt.xlim(0, T_END)
+plt.ylim(V_values[0] - 15, 100)
 
 plt.show()
