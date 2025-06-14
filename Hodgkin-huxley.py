@@ -1,36 +1,48 @@
 import matplotlib.pyplot as plt
 import math
 
+def alpha_beta_assign(variable):
+    if variable == "m":
+        A_m = (0.1*(V_values[-1] + 40))/(1-math.exp(-0.1*(V_values[-1] + 40)))
+        B_m = 4*math.exp(-0.0556*(V_values[-1]+65))
+        return A_m, B_m
+    
+    if variable == "h":
+        A_h = 0.07*math.exp(-0.05*(V_values[-1] + 65))
+        B_h = 1/(1+math.exp(-0.1*(V_values[-1] + 35)))
+        return A_h, B_h
+    
+    if variable == "n":
+        A_n = (0.01*(V_values[-1] + 55))/(1-math.exp(-0.1*(V_values[-1] + 55)))
+        B_n = 0.125*math.exp(-0.0125*(V_values[-1]+65))
+        return A_n, B_n
+
 def variable_inf_calc(variable):
-    global V_values
+    global V_values, A_m, B_m, A_h, B_h
 
     if variable == "m":
-        A_m = (0.1*(V_values[0] + 40))/(1-math.exp(-0.1*(V_values[0] + 40)))
-        B_m = 4*math.exp(-0.0556*(V_values[0]+65))
+        A_m, B_m = alpha_beta_assign("m")
         m_inf = A_m/(A_m + B_m)
         tau_m = 1/(A_m + B_m)
         return m_inf, tau_m
 
     if variable == "h":
-        A_h = 0.07*math.exp(-0.05*(V_values[0] + 65))
-        B_h = 1/(1+math.exp(-0.1*(V_values[0] + 35)))
+        A_h, B_h = alpha_beta_assign("h")
         h_inf = A_h/(A_h + B_h)
         tau_h = 1/(A_h + B_h)
         return h_inf, tau_h
     
     if variable == "n":
-        A_n = (0.01*(V_values[0] + 55))/(1-math.exp(-0.1*(V_values[0] + 55)))
-        B_n = 0.125*math.exp(-0.0125*(V_values[0]+65))
+        A_n, B_n = alpha_beta_assign("n")
         n_inf = A_n/(A_n + B_n)
         tau_n = 1/(A_n + B_n)
         return n_inf, tau_n 
     
     if variable == "V":
-        for index in range(len(n_values)):
-            V_inf = ((G_MAX_L*E_L) + (G_MAX_K*(n_values[index]**4)*E_K)+(G_MAX_NA*(m_values[index]**3)*h_values[index]*E_NA))/(G_MAX_L + (G_MAX_K*(n_values[index]**4)) + (G_MAX_NA*(m_values[index]**3)*h_values[index]))
-        for index in range(len(n_values)):
+        for index in range(len(m_values)):
+            V_inf = ((G_MAX_L*E_L) + (G_MAX_K*(n_values[index]**4)*E_K)+(G_MAX_NA*(m_values[index]**3)*h_values[index]*E_NA + I_t_values[-1]))/(G_MAX_L + (G_MAX_K*(n_values[index]**4)) + (G_MAX_NA*(m_values[index]**3)*h_values[index]))
             tau_V = C/(G_MAX_L + (G_MAX_K*(n_values[index]**4)) + (G_MAX_NA*(m_values[index]**3)*h_values[index]))
-        return V_inf, tau_V
+            return V_inf, tau_V
 
 def variable_calc(variable):
     global m_inf, m_values, tau_m, h_inf, h_values, tau_h, n_inf, n_values, tau_n, DT
@@ -38,12 +50,15 @@ def variable_calc(variable):
     if variable == "m":
         m = m_inf + (m_values[-1] - m_inf)*math.exp(-DT/tau_m)
         return m
+    
     if variable == "h":
         h = h_inf + (h_values[-1] - h_inf)*math.exp(-DT/tau_h)
         return h
+    
     if variable == "n":
         n = n_inf + (n_values[-1] - n_inf)*math.exp(-DT/tau_n)
         return n
+    
     if variable == "V":
         V = V_inf + (V_values[-1] - V_inf)*math.exp(-DT/tau_V)
         return V
@@ -71,9 +86,7 @@ E_NA = 50 #sodium
 """counters"""
 current_time = 0
 time = [0]
-I_t_values = []
-
-
+I_t_values = [0]
 
 V_values = [-65] #intital value
 
@@ -97,7 +110,17 @@ V_inf, tau_V = variable_inf_calc("V")
 while current_time <= T_END:
     current_time = current_time + DT
     time.append(current_time)
+
+    if current_time < T_STIM_START or current_time >= T_STIM_END:
+        I = 0
+        I_t_values.append(I)
+    if current_time >= T_STIM_START and current_time < T_STIM_END:
+        I = I_0
+        I_t_values.append(I)
     
+    A_m, B_m = alpha_beta_assign("m")
+    A_h, B_h = alpha_beta_assign("h")
+    A_n, B_n = alpha_beta_assign("n")
 
     m = variable_calc("m")
     g_m_values.append(m*100)
@@ -111,14 +134,11 @@ while current_time <= T_END:
     g_n_values.append(n*100)
     n_values.append(n)
 
+    V_inf, tau_V = variable_inf_calc("V")
     V = variable_calc("V")
     V_values.append(V)
 
-
-"""if time <= T_STIM_START or time >= T_STIM_END:
-        I = 0"""
-
-"""print(str(V_values[100]) + "\n" + str(m_values[100]) + "\n" + str(n_values[100]) + "\n" + str(h_values[100]) + "\n" + str(time[100]))
+"""print(str(V_values) + "\n" + str(m_values[1:5]) + "\n" + str(n_values[1:5]) + "\n" + str(h_values[1:5]) + "\n" + str(time[1:5]))
 print(g_m_values)
 print(V_inf, tau_V)
 print(m_inf, tau_m)
@@ -131,7 +151,8 @@ plt.plot(time, g_h_values, color = "red")
 plt.plot(time, g_n_values, color = "green")
 plt.xlabel("Voltage (nA)")
 plt.ylabel("Time (ms)")
-plt.legend(["Voltage", "m*100" , "h*100", "n*100"], loc = "lower right")
-plt.xlim(0, T_END)
-plt.ylim(V_values[0] - 15, 100)
+#plt.legend(["Voltage", "m*100" , "h*100", "n*100"], loc = "lower right")
+#plt.xlim(0, T_END)
+#plt.ylim(V_values[0] - 15, 100)
+
 plt.show()
