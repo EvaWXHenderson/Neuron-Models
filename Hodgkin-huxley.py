@@ -62,10 +62,18 @@ def variable_calc(variable):
         V = V_inf + (V_values[-1] - V_inf)*math.exp(-DT/tau_V)
         return V
 
+def counting_interval():
+    global time, T_COUNT_START, T_STIM_END, V_values, V_th, spikes
+
+    for index in range(len(time)-1):
+        if time[index] > T_COUNT_START and time[index] <= T_STIM_END:
+            if V_values[-1] < V_th and V_values[index + 1] > -50:
+                spikes = spikes + 1
+
 def average_spiking_rate():
     global spikes 
 
-    AveSRate = 1000*spikes*(T_STIM_END - T_STIM_START)
+    AveSRate = 1000*spikes/(T_STIM_END - T_COUNT_START)
     return AveSRate
 
 def graph_type(type, scaled, variable = False):
@@ -112,6 +120,13 @@ def graph_type(type, scaled, variable = False):
             plt.legend(["Voltage", "m^3*100" , "h*100", "n^4*100", "m^3*h*100"], loc = "lower right")
             plt.xlim(0, T_END)
             plt.ylim(V_values[0] - 15, 100)
+
+def results(no_spikes = True, AveRate = True):
+    if no_spikes == True:
+        print("No. spikes with applied current of " + str(I_0) + " nA/mm^2 (over " + str(T_STIM_END - T_COUNT_START) + " s): " + str(spikes))
+
+    if AveRate == True:
+        print("Average spiking rate: " + str(round(average_spiking_rate())) + "(Hz)")
 
 
 """time duration:"""
@@ -210,14 +225,9 @@ while current_time <= T_END:
 
     g2_m3_h_values.append((m**3)*h*100)
 
-
-for index in range(len(time)-1):
-    if time[index] > T_COUNT_START and time[index] <= T_STIM_END:
-        if V_values[-1] < V_th and V_values[index + 1] > -50:
-            spikes = spikes + 1
+counting_interval()
 
 graph_type("comparison", "yes")
-
-print("Number of spikes with applied current of " + str(I_0) + " nA/mm^2: " + str(spikes))
+results()
 
 plt.show()

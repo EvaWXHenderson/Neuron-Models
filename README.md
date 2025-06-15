@@ -14,7 +14,7 @@ Koch, C. (1999). Biophysics of computation : information processing in single ne
 
 ## Hodgkin-Huxley Fire and Integrate model
 The hodgkin-huxley neuron model models the voltage and time dependent conductance of channels, adding complexity to the fire and integrate model of the neuron. The consideration of ion channels is represented by the activation variables m and n, and inactivation varibale h. These represent a probability for channel opening.
-A combination of m and h variables dicatate the 'opening' of Na<sup>+<sup> channels (seen in graphed results as m<sup>3<sup>(100h)), and variable n dictates the 'opening' of K<sup>+<sup> channels.
+A combination of m and h variables dicatate the 'opening' of Na<sup>+</sup> channels (seen in graphed results as m<sup>3</sup>(100h)), and variable n dictates the 'opening' of K<sup>+</sup> channels.
 
 Here, different graphs displaying the change in Hodgkin-huckley variables (m, h, n and V) over time in response to the external application of a constant current can be visualised. An average firing rate through different time intervals can also be found.
 
