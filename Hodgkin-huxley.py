@@ -87,7 +87,10 @@ def graph_type(type, scaled, variable = False):
                 plt.plot(time, n_values)
             elif variable == "V":
                 plt.plot(time, V_values)
-
+                plt.ylabel("Voltage (nA)")
+            
+            plt.xlabel("time (secs)")
+ 
         if scaled == "yes":
             if variable == "m":
                 plt.plot(time, g1_m_values)
@@ -97,6 +100,9 @@ def graph_type(type, scaled, variable = False):
                 plt.plot(time, g1_n_values)
             elif variable == "V":
                 plt.plot(time, V_values)
+                plt.ylabel("Voltage (nA)")
+            
+            plt.xlabel("time (secs)")
     
     if type == "comparison":
         if scaled == "no":
@@ -123,7 +129,7 @@ def graph_type(type, scaled, variable = False):
 
 def results(no_spikes = True, AveRate = True):
     if no_spikes == True:
-        print("No. spikes with applied current of " + str(I_0) + " nA/mm^2 (over " + str(T_STIM_END - T_COUNT_START) + " s): " + str(spikes))
+        print("No. spikes with applied current of " + str(I_0) + " nA/mm^2 (over " + str(T_COUNT_START - T_STIM_END) + " s): " + str(spikes))
 
     if AveRate == True:
         print("Average spiking rate: " + str(round(average_spiking_rate())) + "(Hz)")
@@ -131,9 +137,9 @@ def results(no_spikes = True, AveRate = True):
 
 """time duration:"""
 DT = 0.1 #change in time in (ms)
-T_END = 700 #duration (ms)
-T_STIM_START = 100 #time start of current injection (ms)
-T_STIM_END = 600 #time end of current injection (ms)
+T_END = 70 #duration (ms)
+T_STIM_START = 10 #time start of current injection (ms)
+T_STIM_END = 60 #time end of current injection (ms)
 T_COUNT_START = T_STIM_START + 200 #(ms)
 
 C = 10 #capacitance per unit area(nF/mm^2)
@@ -227,7 +233,7 @@ while current_time <= T_END:
 
 counting_interval()
 
-graph_type("comparison", "yes")
+graph_type("single", "no", "V")
 results()
 
 plt.show()
